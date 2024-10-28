@@ -11,7 +11,7 @@ export async function postMessage(text: string, channel: string) {
   const response = await fetch("https://slack.com/api/chat.postMessage", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${SLACK_TOKEN}`,
+      Authorization: `Bearer ${SLACK_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -32,12 +32,12 @@ export async function postMessage(text: string, channel: string) {
 export async function setSlackStatus(
   text: string,
   emoji: string,
-  exp: number = 0,
+  exp: number = 0
 ) {
   const response = await fetch("https://slack.com/api/users.profile.set", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${SLACK_TOKEN}`,
+      Authorization: `Bearer ${SLACK_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -61,7 +61,7 @@ export async function getSlackStatus() {
   const response = await fetch("https://slack.com/api/users.profile.get", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${SLACK_TOKEN}`,
+      Authorization: `Bearer ${SLACK_TOKEN}`,
       "Content-Type": "application/json",
     },
   });
@@ -77,7 +77,6 @@ export async function getSlackStatus() {
     emoji: result.profile.status_emoji,
   };
 }
-
 export async function clearSlackStatus() {
   await setSlackStatus("", "");
   console.log("✅ Slack status cleared");

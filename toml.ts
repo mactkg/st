@@ -24,7 +24,7 @@ export async function loadConfig(fileName: string): Promise<TomlConfig | null> {
       const toml = await Deno.readTextFile(path);
       const config = parseToml(toml);
       return config as unknown as TomlConfig;
-    } catch (e) {
+    } catch (_e) {
       continue;
     }
   }
