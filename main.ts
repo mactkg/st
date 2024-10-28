@@ -2,11 +2,10 @@ import { Command } from "jsr:@cliffy/command@1.0.0-rc.7";
 import { logger } from "./logger.ts";
 import { loadConfig, type TomlConfig } from "./toml.ts";
 import {
-  clearSlackStatus,
-  getSlackStatus,
-  postMessage,
-  setSlackStatus,
-} from "./slack.ts";
+  SlackService,
+  ConsoleDummySlackService,
+  SlackServiceType,
+} from "./slack/index.ts";
 
 function findStatusKey(config: TomlConfig, text: string) {
   for (const [key, value] of Object.entries(config.states)) {
@@ -69,6 +68,10 @@ if (!config) {
   logger.error("Config file not found.");
   Deno.exit(1);
 }
+const slack: SlackServiceType =
+  Deno.env.get("DEBUG") == "1"
+    ? new ConsoleDummySlackService()
+    : new SlackService();
 
 const set = await new Command()
   .arguments("[status:string]")
@@ -81,7 +84,7 @@ const set = await new Command()
     const st = await getSelectedStatusOrAsk(config, status);
 
     if (st) {
-      await setSlackStatus(st.text, st.emoji);
+      await slack.setSlackStatus(st.text, st.emoji);
       if (quiet) {
         console.log(`Skip posting messages because ${quiet} option enabled.`);
         Deno.exit(0);
@@ -91,7 +94,7 @@ const set = await new Command()
         console.log(
           `--channel is set to ${channel}, therefore post message to only the channel.`,
         );
-        await postMessage(message, channel);
+        await slack.postMessage(message, channel);
       } else {
         if (message) {
           console.log(
@@ -99,7 +102,10 @@ const set = await new Command()
           );
         }
         for (const stMessage of st.messages) {
-          await postMessage(message || stMessage.message, stMessage.channel);
+          await slack.postMessage(
+            message || stMessage.message,
+            stMessage.channel
+          );
         }
       }
     } else {
@@ -107,20 +113,20 @@ const set = await new Command()
     }
   });
 const clear = await new Command()
-  .action(clearSlackStatus);
+  .action(slack.clearSlackStatus);
 const list = await new Command()
   .action(() => listStates(config));
 const show = await new Command()
   .action(async () => {
-    const st = await getSlackStatus();
-    if (st.text == "" && st.emoji == "") {
-      console.log("Status is empty");
-    } else {
-      const state = findStatusKey(config, st.text);
-      const stateStr = state ? `(${state})` : "";
-      console.log(`${st.emoji} ${st.text}${stateStr}`);
-    }
-  });
+    const st = await slack.getSlackStatus();
+  if (st.text == "" && st.emoji == "") {
+    console.log("Status is empty");
+  } else {
+    const state = findStatusKey(config, st.text);
+    const stateStr = state ? `(${state})` : "";
+    console.log(`${st.emoji} ${st.text}${stateStr}`);
+  }
+});
 
 await new Command()
   .name("st")
