@@ -15,12 +15,12 @@ jobs:
     steps:
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           draft: true
           prerelease: false
 
@@ -40,15 +40,20 @@ jobs:
 
     steps:
       - name: Set up Deno
-        uses: denolib/setup-deno@v2
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
 
       - name: Check out repository
         uses: actions/checkout@v2
         with:
           repository: mactkg/st
 
+      - name: Create Build Directory
+        run: mkdir build
+
       - name: Build binary
-        run: deno compile --unstable --target=${{ matrix.target }} --output=build/st-${{ matrix.target }} main.ts
+        run: deno compile -L debug --target=${{ matrix.target }} --output=build/st-${{ matrix.target }} main.ts
 
       - name: Compress binary
         run: |
