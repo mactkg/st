@@ -36,7 +36,7 @@ async function selectState(config: TomlConfig): Promise<string | undefined> {
   }
 
   const selectedIndex = await prompt(
-    "Enter the number of the state you want to set: ",
+    "Enter a number of states you want to set: ",
   );
 
   const index = parseInt(selectedIndex ?? "", 10);
@@ -72,7 +72,7 @@ if (!config) {
 
 const set = await new Command()
   .arguments("[status:string]")
-  .option("-q, --quiet", "Set without post messages")
+  .option("-q, --quiet", "Set status without posting messages")
   .option("-m, --message <message:string>", "Message to post")
   .option("-c, --channel <channel:string>", "Channel to post", {
     depends: ["message"],
