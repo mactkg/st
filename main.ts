@@ -1,7 +1,11 @@
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.7";
 import { Confirm, Input, Number, Secret } from "jsr:@cliffy/prompt@1.0.0-rc.7";
 import { logger } from "./logger.ts";
-import { generateState, loadConfig, type TomlConfig } from "./toml.ts";
+import {
+  generateState,
+  loadConfig as loadTomlConfig,
+  type TomlConfig,
+} from "./toml.ts";
 import {
   ConsoleDummySlackService,
   SlackService,
@@ -64,11 +68,15 @@ async function getSelectedStatusOrAsk(
   }
 }
 
-const config = await loadConfig("config.toml");
-if (!config) {
-  logger.error("Config file not found.");
-  Deno.exit(1);
-}
+const loadConfigOrExit = async () => {
+  const config = await loadTomlConfig("config.toml");
+  if (!config) {
+    logger.error("Config file not found.");
+    Deno.exit(1);
+  }
+  return config;
+};
+
 const slack: SlackServiceType = Deno.env.get("DEBUG") == "1"
   ? new ConsoleDummySlackService()
   : new SlackService();
@@ -81,6 +89,7 @@ const set = await new Command()
     depends: ["message"],
   })
   .action(async ({ quiet, message, channel }, status = "") => {
+    const config = await loadConfigOrExit();
     const st = await getSelectedStatusOrAsk(config, status);
 
     if (st) {
@@ -115,9 +124,13 @@ const set = await new Command()
 const clear = await new Command()
   .action(slack.clearSlackStatus);
 const list = await new Command()
-  .action(() => listStates(config));
+  .action(async () => {
+    const config = await loadConfigOrExit();
+    listStates(config);
+  });
 const show = await new Command()
   .action(async () => {
+    const config = await loadConfigOrExit();
     const st = await slack.getSlackStatus();
     if (st.text == "" && st.emoji == "") {
       console.log("Status is empty");
@@ -129,6 +142,7 @@ const show = await new Command()
   });
 const generate = await new Command()
   .description("Append new state to your config file.")
+  .alias("g")
   .arguments("[state:string]")
   .option("-e, --emoji <emoji:string>", "Emoji of status on Slack")
   .option("-t, --text <text:string>", "Text of status on Slack")
@@ -147,7 +161,8 @@ const generate = await new Command()
       "Enter status text(e.g. Working from home)",
     );
 
-    if (stateName in config.states) {
+    const config = await loadTomlConfig("config.toml");
+    if (config && stateName in config.states) {
       logger.error(
         `State ${stateName} is already defined in config.toml! Aborted.`,
       );
@@ -164,6 +179,5 @@ await new Command()
   .command("clear", clear)
   .command("ls", list)
   .command("show", show)
-  .command("g", generate)
   .command("generate", generate)
   .parse(Deno.args);

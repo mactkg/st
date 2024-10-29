@@ -30,7 +30,7 @@ export async function loadConfig(fileName: string): Promise<TomlConfig | null> {
 
       return config as unknown as TomlConfig;
     } catch (e) {
-      logger.error(e);
+      logger.debug(e);
     }
   }
 
@@ -48,7 +48,6 @@ export async function generateState(
       [name]: {
         text,
         emoji,
-        messages: [],
       },
     },
   };
