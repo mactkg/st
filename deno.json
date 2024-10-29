@@ -7,6 +7,7 @@
     "@std/toml": "jsr:@std/toml@^1.0.1"
   }, 
   "tasks": {
-    "build": "deno compile --output=build/st -A main.ts"
+    "build": "deno compile --output=build/st -A main.ts",
+    "install-local": "deno task build && cp ./build/st $HOME/local/bin/st" 
   }
 }
