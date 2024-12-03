@@ -8,6 +8,10 @@
   },
   "tasks": {
     "build": "deno compile --output=build/st -A main.ts",
-    "install-local": "deno task build && cp ./build/st $HOME/local/bin/st"
+    "install-local": {
+      "description": "Build and install a command to local",
+      "dependencies": ["build"],
+      "command": "cp ./build/st $HOME/local/bin/st"
+    }
   }
 }
