@@ -1,6 +1,7 @@
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.7";
-import { Confirm, Input, Number, Secret } from "jsr:@cliffy/prompt@1.0.0-rc.7";
-import { audit, logger } from "./logger.ts";
+import { Input } from "jsr:@cliffy/prompt@1.0.0-rc.7";
+import { logger } from "./logger.ts";
+import { audit } from "./audit.ts";
 import {
   generateState,
   loadConfig as loadTomlConfig,
@@ -94,6 +95,7 @@ const set = await new Command()
 
     if (st) {
       await slack.setSlackStatus(st.text, st.emoji);
+      audit.set(status, st);
       if (quiet) {
         console.log(`Skip posting messages because ${quiet} option enabled.`);
         Deno.exit(0);
@@ -117,7 +119,6 @@ const set = await new Command()
           );
         }
       }
-      audit.info(`slack status updated to ${status}`);
     } else {
       logger.error("State not found");
     }
@@ -125,7 +126,7 @@ const set = await new Command()
 const clear = await new Command()
   .action(() => {
     slack.clearSlackStatus();
-    audit.info("slack status cleared");
+    audit.clear();
   });
 const list = await new Command()
   .action(async () => {

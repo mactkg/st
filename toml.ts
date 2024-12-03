@@ -7,7 +7,7 @@ export interface TomlConfig {
   states: Record<string, Status>;
 }
 
-interface Status {
+export interface Status {
   text: string;
   emoji: string;
   messages: Message[];
