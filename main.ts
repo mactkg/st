@@ -1,6 +1,6 @@
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.7";
 import { Confirm, Input, Number, Secret } from "jsr:@cliffy/prompt@1.0.0-rc.7";
-import { logger } from "./logger.ts";
+import { audit, logger } from "./logger.ts";
 import {
   generateState,
   loadConfig as loadTomlConfig,
@@ -117,12 +117,16 @@ const set = await new Command()
           );
         }
       }
+      audit.info(`slack status updated to ${status}`);
     } else {
       logger.error("State not found");
     }
   });
 const clear = await new Command()
-  .action(slack.clearSlackStatus);
+  .action(() => {
+    slack.clearSlackStatus();
+    audit.info("slack status cleared");
+  });
 const list = await new Command()
   .action(async () => {
     const config = await loadConfigOrExit();
