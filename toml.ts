@@ -1,7 +1,6 @@
 import xdg from "https://deno.land/x/xdg_portable@v10.6.0/src/mod.deno.ts";
 import { parse as parseToml, stringify } from "jsr:@std/toml";
 import { logger } from "./logger.ts";
-import { load } from "@std/dotenv";
 
 export interface TomlConfig {
   states: Record<string, Status>;
